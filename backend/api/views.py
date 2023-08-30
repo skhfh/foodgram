@@ -23,13 +23,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
     pagination_class = PageNumberPagination
 
-    def perform_create(self, serializer):
-        serializer.save()
-        user = get_object_or_404(User,
-                                 email=serializer.validated_data['email'])
-        user.set_password(serializer.validated_data['password'])
-        user.save()
-
     @action(detail=False, methods=['get'],
             permission_classes=[permissions.IsAuthenticated])
     def me(self, request):

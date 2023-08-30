@@ -41,6 +41,12 @@ class UsersSerializer(serializers.ModelSerializer):
                   'last_name',
                   'password')
 
+    def create(self, validated_data):
+        user = User.objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
 
 class SetPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(style={"input_type": "password"},
