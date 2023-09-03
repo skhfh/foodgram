@@ -1,30 +1,34 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import TokenSerializer
-from django.shortcuts import get_object_or_404
 from djoser.utils import login_user
 from djoser.views import TokenCreateView
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
-from rest_framework.pagination import PageNumberPagination
 
-from recipes.models import Favorite, Follow, Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import (Favorite, Follow, Ingredient, Recipe,
+                            RecipeIngredient, Tag)
 from .filters import IngredientFilter, RecipeFilter
 from .mixins import CreateListRetrieveViewSet
 from .pagination import CustomPagination
-from .permissions import AuthorOrReadOnlyPermission, CurrentUserOrAdminPermission
-from .serializers import FollowSerializer, IngredientSerializer, SetPasswordSerializer, RecipeSerializer,\
-    RecipeCreateUpdateSerializer, RecipeLightSerializer, ShoppingCart, TagSerializer, UserSerializer
+from .permissions import (AuthorOrReadOnlyPermission,
+                          CurrentUserOrAdminPermission)
+from .serializers import (FollowSerializer, IngredientSerializer,
+                          RecipeCreateUpdateSerializer, RecipeLightSerializer,
+                          RecipeSerializer, SetPasswordSerializer,
+                          ShoppingCart, TagSerializer, UserSerializer)
 
 User = get_user_model()
 
 
 class UserViewSet(CreateListRetrieveViewSet):
+    """Вьюсет для работы с User"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.AllowAny,)
@@ -95,6 +99,7 @@ class UserViewSet(CreateListRetrieveViewSet):
 
 
 class CustomTokenCreateView(TokenCreateView):
+    """Вью-класс для создания токенов"""
 
     def _action(self, serializer):
         token = login_user(self.request, serializer.user)
@@ -106,6 +111,7 @@ class CustomTokenCreateView(TokenCreateView):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для отображения Ингредиентов"""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (permissions.AllowAny,)
@@ -115,6 +121,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для отображения Тэгов"""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (permissions.AllowAny,)
@@ -122,6 +129,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с Рецептами"""
     queryset = Recipe.objects.all()
     permission_classes = (AuthorOrReadOnlyPermission,)
     pagination_class = CustomPagination
@@ -173,8 +181,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         shopping_cart_qs = (
             RecipeIngredient.objects.
-            filter(recipe__in_shoppingcart_for_users__user=
-                   request.user).
+            filter(recipe__in_shoppingcart_for_users__user=request.user).
             values('ingredient__name', 'ingredient__measurement_unit').
             annotate(total_count=Sum('amount')))
         if shopping_cart_qs.count() == 0:

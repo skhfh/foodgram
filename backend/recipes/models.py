@@ -1,8 +1,7 @@
 from colorfield.fields import ColorField
+from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.contrib.auth import get_user_model
-
 
 User = get_user_model()
 
@@ -81,6 +80,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ['-pub_date']
 
     def __str__(self):
         return self.name
@@ -96,8 +96,12 @@ class RecipeIngredient(models.Model):
                                    related_name='recipes_from_ingredient',
                                    on_delete=models.CASCADE,
                                    verbose_name='Ингредиент')
-    amount = models.PositiveSmallIntegerField(default=0,
-                                              verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name='Количество',
+        validators=[MinValueValidator(
+            1, message='Количество ингредиента должно быть не меньше 1')]
+    )
 
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
@@ -189,4 +193,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} - {self.following}'
-

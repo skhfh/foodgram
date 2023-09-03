@@ -7,7 +7,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'nhu2HEtmpfSZbw0aO1lKA9vqGQT4sI!6CgX.MPy3')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'host.docker.internal',
+    'localhost',
+    'backend',
+]
 
 
 INSTALLED_APPS = [
@@ -60,8 +65,12 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': os.getenv('POSTGRES_DB', default='django'),
+        'USER': os.getenv('POSTGRES_USER', default='django_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='mysecretpassword'),
+        'HOST': os.getenv('DB_HOST', default='localhost'),
+        'PORT': os.getenv('DB_PORT',default=5432)
     }
 }
 
@@ -94,6 +103,7 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -1,11 +1,13 @@
 from django.contrib import admin
 
-from .models import Favorite, Follow, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
+from .models import (Favorite, Follow, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Tag)
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'measurement_unit',)
+    search_fields = ('name',)
 
 
 class IngredientInline(admin.TabularInline):
@@ -17,8 +19,19 @@ class IngredientInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'text', 'cooking_time',)
+    list_display = ('pk',
+                    'name',
+                    'author',
+                    'text',
+                    'cooking_time',
+                    'added_in_favorite')
+    list_filter = ('tags',)
+    search_fields = ('name', 'author')
     inlines = [IngredientInline]
+
+    @admin.display(description='Количество добавлений в Избранное')
+    def added_in_favorite(self, obj):
+        return obj.favorite_for_users.count()
 
 
 @admin.register(Tag)

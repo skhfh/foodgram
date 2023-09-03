@@ -1,8 +1,8 @@
 from django.urls import include, path
-from djoser.views import UserViewSet as DjoserViewSet
 from rest_framework import routers
 
-from .views import CustomTokenCreateView, IngredientViewSet, RecipeViewSet, TagViewSet, UserViewSet
+from .views import (CustomTokenCreateView, IngredientViewSet, RecipeViewSet,
+                    TagViewSet, UserViewSet)
 
 app_name = 'api'
 
