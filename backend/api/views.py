@@ -70,24 +70,24 @@ class UserViewSet(CreateListRetrieveViewSet):
         following = get_object_or_404(User, pk=pk)
         if request.method == 'POST':
             if current_user == following:
-                return Response({
-                    'errors': 'Нельзя подписаться на самого себя'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'errors': 'Нельзя подписаться на самого себя'},
+                    status=status.HTTP_400_BAD_REQUEST)
             follow, status_created = Follow.objects.get_or_create(
                 user=current_user, following=following
             )
             if not status_created:
-                return Response({
-                    'errors': 'Вы уже подписаны на этого пользователя'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'errors': 'Вы уже подписаны на этого пользователя'},
+                    status=status.HTTP_400_BAD_REQUEST)
             serializer = FollowSerializer(follow,
                                           context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
             if current_user == following:
-                return Response({
-                    'errors': 'Вы не подписаны на самого себя'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'errors': 'Вы не подписаны на самого себя'},
+                    status=status.HTTP_400_BAD_REQUEST)
             delete_status, _ = Follow.objects.filter(
                 user=current_user,
                 following=following).delete()
@@ -161,9 +161,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             delete_status, _ = model.objects.filter(user=current_user,
                                                     recipe=recipe).delete()
             if not delete_status:
-                return Response({
-                        'errors': f'Рецепта не было в {errors_answers[1]}'},
-                        status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'errors': f'Рецепта не было в {errors_answers[1]}'},
+                    status=status.HTTP_400_BAD_REQUEST)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
