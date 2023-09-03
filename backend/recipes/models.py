@@ -1,3 +1,4 @@
+from colorfield.fields import ColorField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -14,8 +15,8 @@ class Tag(models.Model):
     )
     slug = models.SlugField(max_length=200,
                             unique=True)
-    color = models.CharField(max_length=7,
-                             verbose_name='Цвет')
+    color = ColorField(default='#FF0000',
+                       verbose_name='Цвет тэга')
 
     class Meta:
         verbose_name = 'Тэг'
@@ -39,6 +40,7 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        ordering = ['name']
 
     def __str__(self):
         return self.name + ', ' + self.measurement_unit
@@ -47,7 +49,7 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     """Модель Рецепта"""
     name = models.CharField(
-        max_length=100,
+        max_length=200,
         verbose_name='Название рецепта',
     )
     text = models.TextField(
@@ -70,9 +72,9 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(Ingredient,
                                          through='RecipeIngredient',
                                          verbose_name='Ингредиенты')
-    tag = models.ManyToManyField(Tag,
-                                 related_name='recipes',
-                                 verbose_name='Тэг',)
+    tags = models.ManyToManyField(Tag,
+                                  related_name='recipes',
+                                  verbose_name='Тэг',)
     image = models.ImageField(upload_to='recipes/images/',
                               verbose_name='Картинка блюда')
 

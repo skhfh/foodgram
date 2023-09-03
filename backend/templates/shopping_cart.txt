@@ -1,0 +1,4 @@
+Список покупок
+{% for ingredient in shopping_cart %}
+   - {{ ingredient.0 }} ({{ ingredient.1 }}) - {{ ingredient.2 }}
+{% endfor %}
