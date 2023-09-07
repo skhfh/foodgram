@@ -1,8 +1,5 @@
-import base64
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -10,6 +7,7 @@ from foodgram.settings import RECIPES_LIMIT
 from recipes.models import (Favorite, Follow, Ingredient, Recipe,
                             RecipeIngredient, ShoppingCart, Tag)
 from users.validators import validate_username_not_me
+from .fields import Base64ImageField
 
 User = get_user_model()
 
@@ -71,7 +69,11 @@ class SetPasswordSerializer(serializers.Serializer):
     def validate(self, data):
         if data['new_password'] == data['current_password']:
             raise serializers.ValidationError(
-                'Введите новый пароль отличный от существующего!')
+                'Введите новый пароль, отличный от существующего!')
+        if not self.context.get('request').user.check_password(
+                data['current_password']):
+            raise serializers.ValidationError(
+                'Введенный существующий пароль неверный')
         return data
 
 
@@ -103,17 +105,11 @@ class FollowSerializer(serializers.ModelSerializer):
                          get('recipes_limit'))
         if not recipes_limit.isdigit():
             recipes_limit = RECIPES_LIMIT
-        recipes = obj.following.recipes.values(
-            'id',
-            'name',
-            'image',
-            'cooking_time',
-        )[:int(recipes_limit)]
-        return recipes
+        recipes = obj.following.recipes.all()[:int(recipes_limit)]
+        return RecipeLightSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
-        recipes_count = obj.following.recipes.count()
-        return recipes_count
+        return obj.following.recipes.count()
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -187,16 +183,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return (ShoppingCart.objects.filter(user=current_user, recipe=obj).
                 exists())
-
-
-class Base64ImageField(serializers.ImageField):
-    """Поле сериализатора картинок в base64"""
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
