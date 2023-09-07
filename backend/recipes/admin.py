@@ -26,7 +26,7 @@ class RecipeAdmin(admin.ModelAdmin):
                     'cooking_time',
                     'added_in_favorite')
     list_filter = ('tags',)
-    search_fields = ('name', 'author')
+    search_fields = ('name', 'author__email')
     inlines = [IngredientInline]
 
     @admin.display(description='Количество добавлений в Избранное')
