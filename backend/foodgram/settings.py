@@ -5,14 +5,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'nhu2HEtmpfSZbw0aO1lKA9vqGQT4sI!6CgX.MPy3')
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', '').lower() == 'true'
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'host.docker.internal',
-    'localhost',
-    'backend',
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 
 INSTALLED_APPS = [
@@ -67,9 +62,9 @@ DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
         'NAME': os.getenv('POSTGRES_DB', default='django'),
-        'USER': os.getenv('POSTGRES_USER', default='django_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='mysecretpassword'),
-        'HOST': os.getenv('DB_HOST', default='localhost'),
+        'USER': os.getenv('POSTGRES_USER', default='django'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default=''),
+        'HOST': os.getenv('DB_HOST', default=''),
         'PORT': os.getenv('DB_PORT', default=5432)
     }
 }
@@ -106,7 +101,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'collected_static'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = '/media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

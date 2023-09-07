@@ -10,15 +10,13 @@ from djoser.views import TokenCreateView
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
 
 from recipes.models import (Favorite, Follow, Ingredient, Recipe,
                             RecipeIngredient, Tag)
 from .filters import IngredientFilter, RecipeFilter
 from .mixins import CreateListRetrieveViewSet
 from .pagination import CustomPagination
-from .permissions import (AuthorOrReadOnlyPermission,
-                          CurrentUserOrAdminPermission)
+from .permissions import AuthorOrReadOnlyPermission
 from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer, RecipeLightSerializer,
                           RecipeSerializer, SetPasswordSerializer,
@@ -41,13 +39,11 @@ class UserViewSet(CreateListRetrieveViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'],
-            permission_classes=[CurrentUserOrAdminPermission])
+            permission_classes=[permissions.IsAuthenticated])
     def set_password(self, request):
         current_user = self.request.user
-        current_password = request.data['current_password']
-        if not current_user.check_password(current_password):
-            raise ValidationError('Введенный существующий пароль неверный')
-        serializer = SetPasswordSerializer(data=request.data)
+        serializer = SetPasswordSerializer(data=request.data,
+                                           context={'request': request})
         serializer.is_valid(raise_exception=True)
         current_user.set_password(serializer.validated_data['new_password'])
         current_user.save()
@@ -83,19 +79,18 @@ class UserViewSet(CreateListRetrieveViewSet):
             serializer = FollowSerializer(follow,
                                           context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if current_user == following:
-                return Response(
-                    {'errors': 'Вы не подписаны на самого себя'},
-                    status=status.HTTP_400_BAD_REQUEST)
-            delete_status, _ = Follow.objects.filter(
-                user=current_user,
-                following=following).delete()
-            if not delete_status:
-                return Response({
-                    'errors': 'Вы не были подписаны на этого пользователя'},
-                    status=status.HTTP_400_BAD_REQUEST)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        if current_user == following:
+            return Response(
+                {'errors': 'Вы не подписаны на самого себя'},
+                status=status.HTTP_400_BAD_REQUEST)
+        delete_status, _ = Follow.objects.filter(
+            user=current_user,
+            following=following).delete()
+        if not delete_status:
+            return Response({
+                'errors': 'Вы не были подписаны на этого пользователя'},
+                status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CustomTokenCreateView(TokenCreateView):
