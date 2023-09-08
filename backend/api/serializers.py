@@ -103,7 +103,7 @@ class FollowSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         recipes_limit = (self.context.get('request').query_params.
                          get('recipes_limit'))
-        if not recipes_limit.isdigit():
+        if recipes_limit is None:
             recipes_limit = RECIPES_LIMIT
         recipes = obj.following.recipes.all()[:int(recipes_limit)]
         return RecipeLightSerializer(recipes, many=True).data
